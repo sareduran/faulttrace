@@ -695,7 +695,7 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                     prompt = build_qa_prompt(question, events, decision.chunks)
                     generation_started = time.perf_counter()
                     with st.spinner("The local model is preparing a grounded answer..."):
-                        with FoundryChatService(max_tokens=260) as chat:
+                        with FoundryChatService(max_tokens=320) as chat:
                             answer = chat.complete(QA_SYSTEM_PROMPT, prompt)
                     generation_seconds = time.perf_counter() - generation_started
                     citation_audit = audit_answer_citations(

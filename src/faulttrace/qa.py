@@ -185,6 +185,10 @@ LOG EVIDENCE
 RUNBOOK EVIDENCE
 {runbook_evidence}
 
-Give a direct answer first. Then, when useful, add a short **Evidence** list.
-Use only [L#] and [R#] citations that appear above.
+Return a complete answer of at most 120 words.
+Give the direct answer first and cite claims inline.
+Do not reproduce raw evidence lines or copy whole runbook passages.
+If an **Evidence** list is useful, include at most 3 short bullets.
+Use at most 5 total citations and only [L#]/[R#] labels that appear above.
+Never end with an unfinished sentence.
 """

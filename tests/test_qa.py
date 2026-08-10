@@ -87,6 +87,8 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertIn("api-gateway", prompt)
         self.assertIn("[R1] Source: database.md", prompt)
         self.assertIn("What should I check?", prompt)
+        self.assertIn("at most 120 words", prompt)
+        self.assertIn("Never end with an unfinished sentence", prompt)
 
     def test_general_definition_prompt_excludes_incident_logs(self) -> None:
         event = LogEvent(
