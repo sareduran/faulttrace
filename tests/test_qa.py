@@ -166,6 +166,27 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertFalse(invalid.passed)
         self.assertEqual(("500",), invalid.unsupported_http_statuses)
 
+    def test_claim_audit_ignores_generic_status_in_runbook_excerpt(self) -> None:
+        event = LogEvent(
+            timestamp=datetime(2026, 8, 10, 10, 0, 0),
+            level="ERROR",
+            service="api-gateway",
+            message="GET /account returned 401",
+            raw_line="raw",
+            line_number=4,
+        )
+        answer = """Users receive HTTP 401 because signing-key validation failed.
+
+**Evidence**
+[L4] GET /account returned 401
+[R1] Authentication incidents commonly produce HTTP 401 or 403 responses.
+"""
+
+        audit = audit_answer_claims(answer, [event])
+
+        self.assertTrue(audit.passed)
+        self.assertEqual((), audit.unsupported_http_statuses)
+
 
 if __name__ == "__main__":
     unittest.main()

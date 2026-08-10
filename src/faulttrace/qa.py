@@ -61,7 +61,18 @@ def audit_answer_claims(answer: str, events: Sequence[LogEvent]) -> ClaimAudit:
     """Reject HTTP status codes that do not occur in the active incident logs."""
 
     status_pattern = r"(?<!\d)(?:[1-5]\d{2})(?!\d)"
-    answer_statuses = set(re.findall(status_pattern, answer))
+    claim_lines: list[str] = []
+    in_evidence_section = False
+    for line in answer.splitlines():
+        if re.match(r"^\s*(?:#{1,6}\s*)?\*{0,2}evidence\*{0,2}\s*$", line, re.IGNORECASE):
+            in_evidence_section = True
+            continue
+        # Runbook excerpts may mention generic status codes that are not claims
+        # about the active incident. Log-labelled evidence remains auditable.
+        if not in_evidence_section or re.match(r"^\s*\[L\d+\]", line):
+            claim_lines.append(line)
+
+    answer_statuses = set(re.findall(status_pattern, "\n".join(claim_lines)))
     log_text = "\n".join(event.message for event in events)
     supported_statuses = set(re.findall(status_pattern, log_text))
     unsupported = tuple(sorted(answer_statuses - supported_statuses))
