@@ -43,6 +43,7 @@ from faulttrace.quick_analysis import build_quick_report, detect_cause  # noqa: 
 from faulttrace.privacy import redact_events  # noqa: E402
 from faulttrace.qa import (  # noqa: E402
     QA_SYSTEM_PROMPT,
+    assess_incident_alignment,
     audit_answer_claims,
     audit_answer_citations,
     build_qa_prompt,
@@ -661,7 +662,20 @@ def render_incident_qa(events: list[LogEvent]) -> None:
     )
     if st.button("Ask local model", type="primary", disabled=not question.strip()):
         knowledge_base = KnowledgeBase(PROJECT_ROOT / "data" / "faulttrace.db")
-        if knowledge_base.count() == 0:
+        alignment = assess_incident_alignment(question, events)
+        if not alignment.aligned:
+            st.session_state["qa_result"] = {
+                "status": "mismatch",
+                "answer": (
+                    f"This question appears to concern **{alignment.question_domain}**, "
+                    f"but the active logs appear to concern **{alignment.incident_domain}**. "
+                    "Select or upload the matching incident log before asking this question."
+                ),
+                "chunks": [],
+                "question_domain": alignment.question_domain,
+                "incident_domain": alignment.incident_domain,
+            }
+        elif knowledge_base.count() == 0:
             st.session_state["qa_result"] = {
                 "status": "empty",
                 "answer": "The knowledge base is empty. Index a runbook before asking a question.",
@@ -743,6 +757,9 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                 f"Measured locally — retrieval: {result['retrieval_seconds']:.2f}s | "
                 "LLM generation: not started"
             )
+    elif status == "mismatch":
+        st.warning(result["answer"])
+        st.caption("The local chat model was not started because incident alignment failed.")
     elif status in {"empty", "error"}:
         st.error(result["answer"])
     else:

@@ -35,6 +35,63 @@ class EvidenceDecision:
 
 
 @dataclass(frozen=True, slots=True)
+class IncidentAlignment:
+    """Whether a domain-specific question matches the active incident logs."""
+
+    aligned: bool
+    question_domain: str | None
+    incident_domain: str | None
+
+
+DOMAIN_KEYWORDS = {
+    "message queue": (
+        "message queue", "queue", "backlog", "consumer", "acknowledg", "dead-letter"
+    ),
+    "authentication": (
+        "authentication", "auth-service", "jwt", "token", "signing key", "401"
+    ),
+    "database": (
+        "database", "connection pool", "db connection", "sql", "503"
+    ),
+    "CPU": (
+        "cpu", "processor", "thread pool", "thread-pool", "saturation"
+    ),
+}
+
+
+def _detect_domain(text: str) -> str | None:
+    normalized = text.lower()
+    scores = {
+        domain: sum(normalized.count(keyword) for keyword in keywords)
+        for domain, keywords in DOMAIN_KEYWORDS.items()
+    }
+    best_domain, best_score = max(scores.items(), key=lambda item: item[1])
+    return best_domain if best_score > 0 else None
+
+
+def assess_incident_alignment(
+    question: str, events: Sequence[LogEvent]
+) -> IncidentAlignment:
+    """Prevent a domain-specific question from being mixed with unrelated logs."""
+
+    if not question_needs_log_context(question):
+        return IncidentAlignment(True, None, None)
+    question_domain = _detect_domain(question)
+    incident_text = "\n".join(
+        f"{event.service} {event.message}"
+        for event in events
+        if event.level in {"WARNING", "ERROR", "CRITICAL"}
+    )
+    incident_domain = _detect_domain(incident_text)
+    aligned = (
+        question_domain is None
+        or incident_domain is None
+        or question_domain == incident_domain
+    )
+    return IncidentAlignment(aligned, question_domain, incident_domain)
+
+
+@dataclass(frozen=True, slots=True)
 class CitationAudit:
     """Syntactic verification of evidence labels used by a generated answer."""
 
@@ -88,7 +145,7 @@ def audit_answer_citations(
 ) -> CitationAudit:
     """Check that every [L#]/[R#] citation points to supplied prompt evidence."""
 
-    cited = tuple(dict.fromkeys(re.findall(r"\[(?:L|R)\d+\]", answer)))
+    cited = tuple(dict.fromkeys(re.findall(r"\[(?:(?:L|R)?\d+)\]", answer)))
     allowed = set()
     if include_log_evidence:
         allowed = {

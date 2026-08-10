@@ -10,6 +10,7 @@ from pathlib import Path
 from faulttrace.knowledge_base import KnowledgeBase, KnowledgeChunk
 from faulttrace.models import LogEvent
 from faulttrace.qa import (
+    assess_incident_alignment,
     audit_answer_claims,
     audit_answer_citations,
     build_qa_prompt,
@@ -134,10 +135,40 @@ class QuestionAnsweringTests(unittest.TestCase):
 
         valid = audit_answer_citations("Observed [L7]; follow [R1].", [event], [chunk])
         invalid = audit_answer_citations("Observed [L99]; follow [R2].", [event], [chunk])
+        numeric = audit_answer_citations("Unsupported source [1].", [event], [chunk])
 
         self.assertTrue(valid.passed)
         self.assertFalse(invalid.passed)
         self.assertEqual(("[L99]", "[R2]"), invalid.invalid_labels)
+        self.assertFalse(numeric.passed)
+        self.assertEqual(("[1]",), numeric.invalid_labels)
+
+    def test_incident_alignment_rejects_queue_question_for_auth_logs(self) -> None:
+        auth_event = LogEvent(
+            timestamp=datetime(2026, 8, 10, 10, 0, 0),
+            level="ERROR",
+            service="auth-service",
+            message="JWT signing key not found; token validation failed",
+            raw_line="raw",
+            line_number=3,
+        )
+        queue_event = LogEvent(
+            timestamp=datetime(2026, 8, 10, 10, 0, 0),
+            level="ERROR",
+            service="queue-consumer",
+            message="Consumer stopped acknowledging messages; backlog growing",
+            raw_line="raw",
+            line_number=4,
+        )
+        question = "Why is the message queue backlog growing?"
+
+        mismatch = assess_incident_alignment(question, [auth_event])
+        match = assess_incident_alignment(question, [queue_event])
+
+        self.assertFalse(mismatch.aligned)
+        self.assertEqual("message queue", mismatch.question_domain)
+        self.assertEqual("authentication", mismatch.incident_domain)
+        self.assertTrue(match.aligned)
 
     def test_claim_audit_rejects_http_status_absent_from_logs(self) -> None:
         events = [
