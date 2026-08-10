@@ -1,0 +1,16 @@
+2026-08-07 09:10:00 INFO api-gateway - GET /health returned 200
+2026-08-07 09:10:04 INFO order-service - Order created order_id=10482
+2026-08-07 09:10:07 INFO payment-service - Payment request accepted order_id=10482
+2026-08-07 09:10:15 INFO database - Connection acquired active=31 max=50
+2026-08-07 09:10:29 WARN database - Connection pool usage above threshold active=43 max=50
+2026-08-07 09:10:41 WARN payment-service - Database acquisition latency elevated duration_ms=1850
+2026-08-07 09:10:55 WARNING database - Connection pool exhausted active=50 max=50 waiting=9
+2026-08-07 09:11:00 ERROR payment-service - Database connection timeout after 5000ms order_id=10482
+2026-08-07 09:11:06 ERROR order-service - Payment confirmation timed out order_id=10482
+2026-08-07 09:11:11 ERROR api-gateway - POST /payments returned 503 duration_ms=5210
+2026-08-07 09:11:18 WARN notification-service - Payment event not received order_id=10482
+2026-08-07 09:11:27 ERROR payment-service - Database connection timeout after 5000ms order_id=10483
+2026-08-07 09:11:35 CRITICAL payment-service - Health check failed consecutive_failures=3
+2026-08-07 09:11:44 WARN api-gateway - Upstream payment-service circuit breaker opened
+2026-08-07 09:12:00 INFO monitoring - Incident alert created alert_id=DB-771
+

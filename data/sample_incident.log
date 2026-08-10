@@ -1,0 +1,11 @@
+2026-08-06 14:02:10 INFO api-gateway - GET /health returned 200
+2026-08-06 14:02:14 INFO payment-service - Payment request accepted order_id=8841
+2026-08-06 14:02:17 WARN database - Connection pool usage is high active=46 max=50
+2026-08-06 14:02:22 INFO order-service - Order 8841 moved to payment_pending
+2026-08-06 14:03:12 WARNING database - Connection pool exhausted active=50 max=50 waiting=12
+2026-08-06 14:03:18 ERROR payment-service - Database connection timeout after 5000ms order_id=8841
+2026-08-06 14:03:25 ERROR api-gateway - POST /payments returned 503 duration_ms=5214
+2026-08-06 14:03:31 WARN order-service - Payment confirmation delayed order_id=8841
+2026-08-06 14:04:02 CRITICAL payment-service - Health check failed consecutive_failures=3
+2026-08-06 14:04:10 ERROR notification-service - Payment event missing; notification skipped order_id=8841
+

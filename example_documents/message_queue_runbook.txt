@@ -1,0 +1,37 @@
+MESSAGE QUEUE INCIDENT RUNBOOK
+
+Purpose
+This runbook describes how to diagnose and recover from message queue backlog and consumer failure incidents.
+
+Symptoms
+- Queue depth increases continuously while incoming traffic remains stable.
+- Consumers stop acknowledging messages.
+- Message age and processing delay rise above their normal thresholds.
+- Downstream services receive events late or do not receive them at all.
+- Dead-letter queue size may increase.
+
+Probable Causes
+- One or more consumers have crashed or become unhealthy.
+- A poison message repeatedly causes the consumer to fail.
+- Consumer processing is slower than the message production rate.
+- The message broker cannot deliver messages because of a network or storage problem.
+- Consumer authentication credentials have expired.
+
+Immediate Response
+1. Confirm the affected queue, current queue depth, oldest message age, and active consumer count.
+2. Check consumer health logs and identify the first consumer that stopped acknowledging messages.
+3. Inspect the dead-letter queue for poison messages before restarting any service.
+4. Restart only the unhealthy consumer when a safe restart procedure is available.
+5. Temporarily scale healthy consumers if the backlog continues to grow.
+6. Verify that queue depth and message age decrease after recovery.
+
+Prevention
+- Alert when queue depth or oldest message age exceeds the established baseline.
+- Add dead-letter handling and retry limits for poison messages.
+- Monitor consumer acknowledgement rate and processing latency.
+- Use idempotent message handlers so retries do not create duplicate business operations.
+- Document safe consumer restart and backlog recovery procedures.
+
+Escalation
+Escalate to the messaging platform owner when the broker is unavailable, storage is exhausted, multiple queues are affected, or consumer recovery does not reduce the backlog.
+

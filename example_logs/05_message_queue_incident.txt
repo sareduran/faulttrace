@@ -1,0 +1,15 @@
+2026-08-07 17:40:00 INFO order-service - Order event published queue=order-events order_id=12051
+2026-08-07 17:40:08 INFO inventory-consumer - Message acknowledged queue=order-events message_id=88101
+2026-08-07 17:40:20 INFO monitoring - Queue depth normal queue=order-events depth=12
+2026-08-07 17:41:05 WARN monitoring - Queue depth above threshold queue=order-events depth=240
+2026-08-07 17:41:14 WARN inventory-consumer - Message processing latency elevated duration_ms=8200
+2026-08-07 17:41:23 ERROR inventory-consumer - Message acknowledgement failed message_id=88144 reason=handler-crash
+2026-08-07 17:41:31 WARN monitoring - Active consumer count decreased queue=order-events active=1 expected=3
+2026-08-07 17:41:42 ERROR inventory-consumer - Consumer stopped acknowledging messages queue=order-events
+2026-08-07 17:41:55 WARN monitoring - Oldest message age exceeded threshold age_sec=95
+2026-08-07 17:42:06 ERROR order-service - Inventory reservation event timed out order_id=12067
+2026-08-07 17:42:17 WARN checkout-service - Order confirmation delayed order_id=12067
+2026-08-07 17:42:29 ERROR monitoring - Queue backlog growing queue=order-events depth=680 rate_per_min=190
+2026-08-07 17:42:41 CRITICAL inventory-consumer - Health check failed reason=consumer-loop-stopped
+2026-08-07 17:42:52 WARN notification-service - Order confirmation notification delayed order_id=12067
+2026-08-07 17:43:00 INFO monitoring - Incident alert created alert_id=QUEUE-208

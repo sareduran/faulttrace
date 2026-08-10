@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.streamlit/
+data/faulttrace.db
+models/
+.tmp/
+feedback*.txt
+info*.txt
+Summer School Foundry Local Plan.docx
+2026-08-07 091000 INFO api-gateway.txt
+*.inspect.ndjson

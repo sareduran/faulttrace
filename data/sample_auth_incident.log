@@ -1,0 +1,11 @@
+2026-08-06 16:20:00 INFO api-gateway - GET /health returned 200
+2026-08-06 16:20:08 INFO auth-service - Signing key cache refreshed key_id=key-2026-07
+2026-08-06 16:21:12 WARN auth-service - Token validation failures increased count=18 window_sec=60
+2026-08-06 16:21:18 ERROR auth-service - JWT signature verification failed key_id=key-2026-08
+2026-08-06 16:21:21 ERROR api-gateway - GET /account returned 401 user_requests=27
+2026-08-06 16:21:26 WARN order-service - User session rejected during checkout order_id=9021
+2026-08-06 16:21:35 ERROR auth-service - Signing key key-2026-08 not found in local cache
+2026-08-06 16:21:48 ERROR api-gateway - Authentication error rate exceeded threshold rate=0.42
+2026-08-06 16:22:02 CRITICAL auth-service - Health check failed dependency=identity-provider
+2026-08-06 16:22:16 WARN notification-service - Login alert delivery delayed queue_depth=64
+

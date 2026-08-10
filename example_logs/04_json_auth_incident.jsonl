@@ -1,0 +1,6 @@
+{"@timestamp":"2026-08-07T16:00:00Z","severity":"INFO","service_name":"api-gateway","msg":"GET /health returned 200"}
+{"@timestamp":"2026-08-07T16:00:15Z","severity":"WARN","service_name":"auth-service","msg":"Token validation failures increased user=ayse@example.com source_ip=10.20.4.18"}
+{"@timestamp":"2026-08-07T16:00:22Z","severity":"ERROR","service_name":"auth-service","msg":"JWT signature verification failed key_id=key-2026-08 token=abcdefghijk123456"}
+{"@timestamp":"2026-08-07T16:00:29Z","severity":"ERROR","service_name":"api-gateway","msg":"GET /profile returned 401 source_ip=10.20.4.18"}
+{"@timestamp":"2026-08-07T16:00:37Z","severity":"ERROR","service_name":"auth-service","msg":"Signing key key-2026-08 missing from local cache api_key=supersecret123"}
+{"@timestamp":"2026-08-07T16:00:49Z","severity":"CRITICAL","service_name":"auth-service","msg":"Health check failed dependency=identity-provider"}
