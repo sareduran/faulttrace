@@ -72,18 +72,35 @@ def audit_answer_citations(
     answer: str,
     events: Sequence[LogEvent],
     chunks: Sequence[KnowledgeChunk],
+    *,
+    include_log_evidence: bool = True,
 ) -> CitationAudit:
     """Check that every [L#]/[R#] citation points to supplied prompt evidence."""
 
     cited = tuple(dict.fromkeys(re.findall(r"\[(?:L|R)\d+\]", answer)))
-    allowed = {
-        f"[L{event.line_number}]"
-        for event in events
-        if event.level in {"WARNING", "ERROR", "CRITICAL"}
-    }
+    allowed = set()
+    if include_log_evidence:
+        allowed = {
+            f"[L{event.line_number}]"
+            for event in events
+            if event.level in {"WARNING", "ERROR", "CRITICAL"}
+        }
     allowed.update(f"[R{index}]" for index in range(1, len(chunks) + 1))
     invalid = tuple(label for label in cited if label not in allowed)
     return CitationAudit(cited, invalid)
+
+
+def question_needs_log_context(question: str) -> bool:
+    """Return false for definition questions that should use runbooks only."""
+
+    normalized = " ".join(question.lower().strip().split())
+    general_patterns = (
+        r"^what is (?:a|an) ",
+        r"^define ",
+        r"^what does .+ mean\??$",
+        r"^explain (?:the )?(?:concept|definition) of ",
+    )
+    return not any(re.search(pattern, normalized) for pattern in general_patterns)
 
 
 def retrieve_question_evidence(
@@ -112,14 +129,31 @@ def build_qa_prompt(
 ) -> str:
     """Build a compact prompt whose evidence labels can be verified in the UI."""
 
-    serious_events = [
-        event for event in events if event.level in {"WARNING", "ERROR", "CRITICAL"}
-    ]
-    log_evidence = "\n".join(
-        f"[L{event.line_number}] {event.timestamp.isoformat(sep=' ')} "
-        f"{event.level} {event.service}: {event.message}"
-        for event in serious_events
-    ) or "No WARNING, ERROR, or CRITICAL log evidence was supplied."
+    include_logs = question_needs_log_context(question)
+    if include_logs:
+        serious_events = [
+            event
+            for event in events
+            if event.level in {"WARNING", "ERROR", "CRITICAL"}
+        ]
+        log_evidence = "\n".join(
+            f"[L{event.line_number}] {event.timestamp.isoformat(sep=' ')} "
+            f"{event.level} {event.service}: {event.message}"
+            for event in serious_events
+        ) or "No WARNING, ERROR, or CRITICAL log evidence was supplied."
+        scope_instruction = (
+            "This question concerns the active incident. Use [L#] for incident facts "
+            "and [R#] for runbook guidance."
+        )
+    else:
+        log_evidence = (
+            "Not included because this is a general definition question. "
+            "Do not use or cite any [L#] labels."
+        )
+        scope_instruction = (
+            "This is a general definition question. Answer from RUNBOOK EVIDENCE "
+            "and cite [R#]. Do not discuss the active incident or cite logs."
+        )
 
     runbook_evidence = "\n\n".join(
         f"[R{index}] Source: {chunk.source}, section: {chunk.heading}\n{chunk.content}"
@@ -130,6 +164,9 @@ def build_qa_prompt(
 
 QUESTION
 {question.strip()}
+
+QUESTION SCOPE
+{scope_instruction}
 
 LOG EVIDENCE
 {log_evidence}

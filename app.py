@@ -47,6 +47,7 @@ from faulttrace.qa import (  # noqa: E402
     audit_answer_citations,
     build_qa_prompt,
     retrieve_question_evidence,
+    question_needs_log_context,
 )
 
 
@@ -698,9 +699,15 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                             answer = chat.complete(QA_SYSTEM_PROMPT, prompt)
                     generation_seconds = time.perf_counter() - generation_started
                     citation_audit = audit_answer_citations(
-                        answer, events, decision.chunks
+                        answer,
+                        events,
+                        decision.chunks,
+                        include_log_evidence=question_needs_log_context(question),
                     )
-                    claim_audit = audit_answer_claims(answer, events)
+                    claim_events = (
+                        events if question_needs_log_context(question) else []
+                    )
+                    claim_audit = audit_answer_claims(answer, claim_events)
                     st.session_state["qa_result"] = {
                         "status": "answered",
                         "answer": answer,
@@ -731,6 +738,11 @@ def render_incident_qa(events: list[LogEvent]) -> None:
             f"Best similarity: {result['score']:.3f} | Required: "
             f"{result['threshold']:.3f}"
         )
+        if "retrieval_seconds" in result:
+            st.caption(
+                f"Measured locally — retrieval: {result['retrieval_seconds']:.2f}s | "
+                "LLM generation: not started"
+            )
     elif status in {"empty", "error"}:
         st.error(result["answer"])
     else:

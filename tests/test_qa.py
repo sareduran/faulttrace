@@ -13,6 +13,7 @@ from faulttrace.qa import (
     audit_answer_claims,
     audit_answer_citations,
     build_qa_prompt,
+    question_needs_log_context,
     retrieve_question_evidence,
 )
 
@@ -86,6 +87,37 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertIn("api-gateway", prompt)
         self.assertIn("[R1] Source: database.md", prompt)
         self.assertIn("What should I check?", prompt)
+
+    def test_general_definition_prompt_excludes_incident_logs(self) -> None:
+        event = LogEvent(
+            timestamp=datetime(2026, 8, 10, 10, 0, 0),
+            level="ERROR",
+            service="api-gateway",
+            message="HTTP 503",
+            raw_line="raw",
+            line_number=7,
+        )
+        chunk = KnowledgeChunk(
+            1,
+            "incident_response_basics.md",
+            "Incident definition",
+            "A software incident is an unplanned service disruption.",
+            0.8,
+        )
+
+        prompt = build_qa_prompt("What is a software incident?", [event], [chunk])
+        audit = audit_answer_citations(
+            "A definition [R1], but not this event [L7].",
+            [event],
+            [chunk],
+            include_log_evidence=False,
+        )
+
+        self.assertFalse(question_needs_log_context("What is a software incident?"))
+        self.assertTrue(question_needs_log_context("What is causing this incident?"))
+        self.assertNotIn("[L7] 2026", prompt)
+        self.assertIn("cite [R#]", prompt)
+        self.assertEqual(("[L7]",), audit.invalid_labels)
 
     def test_citation_audit_rejects_labels_not_present_in_evidence(self) -> None:
         event = LogEvent(
