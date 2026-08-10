@@ -10,6 +10,7 @@ from pathlib import Path
 from faulttrace.knowledge_base import KnowledgeBase, KnowledgeChunk
 from faulttrace.models import LogEvent
 from faulttrace.qa import (
+    audit_answer_claims,
     audit_answer_citations,
     build_qa_prompt,
     retrieve_question_evidence,
@@ -103,6 +104,35 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertTrue(valid.passed)
         self.assertFalse(invalid.passed)
         self.assertEqual(("[L99]", "[R2]"), invalid.invalid_labels)
+
+    def test_claim_audit_rejects_http_status_absent_from_logs(self) -> None:
+        events = [
+            LogEvent(
+                timestamp=datetime(2026, 8, 10, 10, 0, 0),
+                level="ERROR",
+                service="api-gateway",
+                message="Request returned HTTP 503",
+                raw_line="raw",
+                line_number=7,
+            ),
+            LogEvent(
+                timestamp=datetime(2026, 8, 10, 10, 0, 1),
+                level="ERROR",
+                service="payment-service",
+                message="Database timeout after 5000ms",
+                raw_line="raw",
+                line_number=8,
+            ),
+        ]
+
+        valid = audit_answer_claims("The gateway returned HTTP 503 [L7].", events)
+        invalid = audit_answer_claims(
+            "The gateway returned 503 and payment returned 500.", events
+        )
+
+        self.assertTrue(valid.passed)
+        self.assertFalse(invalid.passed)
+        self.assertEqual(("500",), invalid.unsupported_http_statuses)
 
 
 if __name__ == "__main__":

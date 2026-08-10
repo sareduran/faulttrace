@@ -43,6 +43,7 @@ from faulttrace.quick_analysis import build_quick_report, detect_cause  # noqa: 
 from faulttrace.privacy import redact_events  # noqa: E402
 from faulttrace.qa import (  # noqa: E402
     QA_SYSTEM_PROMPT,
+    audit_answer_claims,
     audit_answer_citations,
     build_qa_prompt,
     retrieve_question_evidence,
@@ -699,6 +700,7 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                     citation_audit = audit_answer_citations(
                         answer, events, decision.chunks
                     )
+                    claim_audit = audit_answer_claims(answer, events)
                     st.session_state["qa_result"] = {
                         "status": "answered",
                         "answer": answer,
@@ -709,6 +711,7 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                         "generation_seconds": generation_seconds,
                         "total_seconds": time.perf_counter() - total_started,
                         "citation_audit": citation_audit,
+                        "claim_audit": claim_audit,
                     }
             except Exception as error:
                 st.session_state["qa_result"] = {
@@ -732,10 +735,19 @@ def render_incident_qa(events: list[LogEvent]) -> None:
         st.error(result["answer"])
     else:
         st.markdown(result["answer"])
-        st.success(
-            f"Evidence check passed ({result['score']:.3f} >= "
-            f"{result['threshold']:.3f}). Answer generated entirely on-device."
-        )
+        claim_audit = result.get("claim_audit")
+        if claim_audit and not claim_audit.passed:
+            st.error(
+                "Grounding audit failed: the draft used HTTP status code(s) not "
+                "present in the incident logs: "
+                + ", ".join(claim_audit.unsupported_http_statuses)
+                + ". Do not use this draft."
+            )
+        else:
+            st.success(
+                f"Evidence check passed ({result['score']:.3f} >= "
+                f"{result['threshold']:.3f}). Answer generated entirely on-device."
+            )
         citation_audit = result.get("citation_audit")
         if citation_audit and citation_audit.passed:
             st.caption(

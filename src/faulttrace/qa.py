@@ -15,6 +15,8 @@ DEFAULT_RELEVANCE_THRESHOLD = 0.48
 QA_SYSTEM_PROMPT = """You are FaultTrace, an offline software incident assistant.
 Answer only from the supplied LOG EVIDENCE and RUNBOOK EVIDENCE.
 Do not use outside knowledge or invent facts, causes, commands, or metrics.
+Never state or infer an HTTP status code unless that exact code occurs in LOG EVIDENCE.
+A timeout does not prove an HTTP 500 response. Do not convert one into a status code.
 Factual incident claims must cite log labels such as [L4].
 Operational guidance must cite runbook labels such as [R1].
 If the evidence does not establish the answer, explicitly say what is missing.
@@ -42,6 +44,28 @@ class CitationAudit:
     @property
     def passed(self) -> bool:
         return bool(self.cited_labels) and not self.invalid_labels
+
+
+@dataclass(frozen=True, slots=True)
+class ClaimAudit:
+    """Deterministic checks for factual values that must exist in log evidence."""
+
+    unsupported_http_statuses: tuple[str, ...]
+
+    @property
+    def passed(self) -> bool:
+        return not self.unsupported_http_statuses
+
+
+def audit_answer_claims(answer: str, events: Sequence[LogEvent]) -> ClaimAudit:
+    """Reject HTTP status codes that do not occur in the active incident logs."""
+
+    status_pattern = r"(?<!\d)(?:[1-5]\d{2})(?!\d)"
+    answer_statuses = set(re.findall(status_pattern, answer))
+    log_text = "\n".join(event.message for event in events)
+    supported_statuses = set(re.findall(status_pattern, log_text))
+    unsupported = tuple(sorted(answer_statuses - supported_statuses))
+    return ClaimAudit(unsupported)
 
 
 def audit_answer_citations(

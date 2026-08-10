@@ -15,7 +15,7 @@ This document maps the Foundry Local summer-school milestones to concrete implem
 | Evidence-grounded answers | Complete | labelled `[L#]` and `[R#]` prompts | prompt-label and citation-audit tests |
 | Insufficient-evidence fallback | Complete | calibrated `0.48` gate in `src/faulttrace/qa.py` | answerable/unanswerable tests and HR-policy evaluation case |
 | Offline inference | Complete after setup | no cloud inference SDK; local Foundry models and SQLite | dependency review and local-only architecture |
-| Functional tests | Complete | 27 automated tests in `tests/` | `python -m unittest discover -s tests -v` |
+| Functional tests | Complete | 28 automated tests in `tests/` | `python -m unittest discover -s tests -v` |
 | Answerable/unanswerable/empty/broken input | Complete | parser and QA guards | explicit automated tests for all four classes |
 | Retrieval evaluation | Complete | `src/faulttrace/evaluation.py` | 5/5 built-in cases passing |
 | Performance measurement | Complete | retrieval, generation, and end-to-end timers in `app.py` | values displayed after local generation |
@@ -25,7 +25,7 @@ This document maps the Foundry Local summer-school milestones to concrete implem
 
 ## Current verification snapshot
 
-- Automated tests: **27/27 passing**
+- Automated tests: **28/28 passing**
 - RAG cases: **5/5 passing**
 - Streamlit automated render: **0 exceptions**
 - Supported retrieval scores: approximately **0.563–0.848**

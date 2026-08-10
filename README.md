@@ -152,7 +152,7 @@ Run the complete automated suite:
 python -m unittest discover -s tests -v
 ```
 
-Current result: **27/27 tests passing**.
+Current result: **28/28 tests passing**.
 
 The suite covers:
 
@@ -206,7 +206,7 @@ FaultTrace/
 │   ├── privacy.py                 # Sensitive-value redaction
 │   ├── qa.py                      # Relevance gate and citation audit
 │   └── quick_analysis.py          # Instant deterministic analysis
-└── tests/                          # 27 automated tests
+└── tests/                          # 28 automated tests
 ```
 
 ## Privacy and offline boundary
