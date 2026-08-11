@@ -152,7 +152,7 @@ Run the complete automated suite:
 python -m unittest discover -s tests -v
 ```
 
-Current result: **28/28 tests passing**.
+Current result: **33/33 tests passing**.
 
 The suite covers:
 
@@ -167,7 +167,8 @@ The suite covers:
 - report persistence;
 - Streamlit data transformation.
 
-The built-in RAG evaluation currently passes **5/5 cases**:
+The built-in RAG evaluation currently passes **6/6 cases** when the included
+message-queue runbook has been indexed:
 
 | Case | Expected behavior | Actual result | Similarity |
 |---|---|---|---:|
@@ -175,6 +176,7 @@ The built-in RAG evaluation currently passes **5/5 cases**:
 | Database pool exhaustion | Retrieve `database_connection_pool.md` | PASS | 0.660 |
 | Authentication key failure | Retrieve `authentication_failures.md` | PASS | 0.637 |
 | CPU saturation | Retrieve `high_cpu.md` | PASS | 0.563 |
+| Message queue consumer failure | Retrieve `custom/message_queue_runbook.txt` | PASS | 0.650 |
 | Unrelated HR policy | Reject | PASS | 0.279 |
 
 The Evaluation tab recomputes retrieval latency on the current machine. Generated answers also display retrieval, LLM generation, and end-to-end latency separately. On the development laptop (Intel i5-11320H, 16 GB RAM, integrated graphics), retrieval takes seconds while deep generation may take roughly one minute; performance varies by hardware and model cache state.
@@ -206,7 +208,7 @@ FaultTrace/
 │   ├── privacy.py                 # Sensitive-value redaction
 │   ├── qa.py                      # Relevance gate and citation audit
 │   └── quick_analysis.py          # Instant deterministic analysis
-└── tests/                          # 28 automated tests
+└── tests/                          # 33 automated tests
 ```
 
 ## Privacy and offline boundary

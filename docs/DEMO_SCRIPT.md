@@ -23,7 +23,7 @@ Mention the models:
 
 ## Slide 5 — Verification
 
-“The project has 28 passing automated tests and five passing retrieval-evaluation cases. The application reports retrieval time, generation time, and total end-to-end time separately. Deep generation is slow on my CPU-based laptop, which is a documented hardware limitation rather than a cloud dependency.”
+“The project has 33 passing automated tests and six passing retrieval-evaluation cases. The application reports retrieval time, generation time, and total end-to-end time separately. Deep generation is slow on my CPU-based laptop, which is a documented hardware limitation rather than a cloud dependency.”
 
 ## Live demo
 

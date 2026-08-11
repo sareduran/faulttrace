@@ -1,0 +1,4 @@
+2026-08-11 10:30:00 INFO api-gateway - Service started
+totally broken log line
+2026-99-99 21:00:00 ERROR database - Invalid timestamp
+2026-08-11 10:30:05 ERROR api-gateway - Request returned HTTP 503

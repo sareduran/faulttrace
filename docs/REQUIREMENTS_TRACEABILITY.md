@@ -8,16 +8,16 @@ This document maps the Foundry Local summer-school milestones to concrete implem
 | User interface | Complete | Six-tab Streamlit interface in `app.py` | `tests/test_dashboard.py`, Streamlit AppTest |
 | TXT/MD/PDF ingestion | Complete | `src/faulttrace/document_ingestion.py` | `tests/test_document_ingestion.py` |
 | Heading-aware chunking | Complete | `chunk_content()` and `prepare_document_chunks()` in `src/faulttrace/knowledge_base.py` | `tests/test_knowledge_base.py` |
-| Foundry Local embeddings | Complete | `FoundryEmbeddingService` using `qwen3-embedding-0.6b` | Five-case live retrieval evaluation |
+| Foundry Local embeddings | Complete | `FoundryEmbeddingService` using `qwen3-embedding-0.6b` | Six-case live retrieval evaluation |
 | SQLite text and vector storage | Complete | `knowledge_chunks` schema in `src/faulttrace/knowledge_base.py` | index/search/replace/delete tests |
 | Semantic top-K retrieval | Complete | cosine similarity and `limit=3` search | `tests/test_knowledge_base.py`, Evaluation tab |
 | Foundry Local LLM | Complete | `FoundryChatService` using `qwen3.5-2b-text` | Deep analysis and Ask FaultTrace flows |
 | Evidence-grounded answers | Complete | labelled `[L#]` and `[R#]` prompts | prompt-label and citation-audit tests |
 | Insufficient-evidence fallback | Complete | calibrated `0.48` gate in `src/faulttrace/qa.py` | answerable/unanswerable tests and HR-policy evaluation case |
 | Offline inference | Complete after setup | no cloud inference SDK; local Foundry models and SQLite | dependency review and local-only architecture |
-| Functional tests | Complete | 28 automated tests in `tests/` | `python -m unittest discover -s tests -v` |
+| Functional tests | Complete | 33 automated tests in `tests/` | `python -m unittest discover -s tests -v` |
 | Answerable/unanswerable/empty/broken input | Complete | parser and QA guards | explicit automated tests for all four classes |
-| Retrieval evaluation | Complete | `src/faulttrace/evaluation.py` | 5/5 built-in cases passing |
+| Retrieval evaluation | Complete | `src/faulttrace/evaluation.py` | 6/6 cases passing with the included custom runbook indexed |
 | Performance measurement | Complete | retrieval, generation, and end-to-end timers in `app.py` | values displayed after local generation |
 | README and limitations | Complete | `README.md` | installation, architecture, evaluation, privacy, limitations |
 | Five-minute presentation/demo | Complete | PowerPoint and demo script in `docs/` | visually rendered and bounds-checked deck |
@@ -25,8 +25,8 @@ This document maps the Foundry Local summer-school milestones to concrete implem
 
 ## Current verification snapshot
 
-- Automated tests: **28/28 passing**
-- RAG cases: **5/5 passing**
+- Automated tests: **33/33 passing**
+- RAG cases: **6/6 passing**
 - Streamlit automated render: **0 exceptions**
 - Supported retrieval scores: approximately **0.563–0.848**
 - Unsupported HR-policy score: **0.279**, correctly rejected below **0.48**
