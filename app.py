@@ -50,6 +50,7 @@ from faulttrace.qa import (  # noqa: E402
     retrieve_question_evidence,
     question_needs_log_context,
     normalize_citation_format,
+    attach_missing_source_context,
 )
 
 
@@ -714,11 +715,18 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                             answer = chat.complete(QA_SYSTEM_PROMPT, prompt)
                     answer = normalize_citation_format(answer)
                     generation_seconds = time.perf_counter() - generation_started
+                    include_log_evidence = question_needs_log_context(question)
+                    answer = attach_missing_source_context(
+                        answer,
+                        events,
+                        decision.chunks,
+                        include_log_evidence=include_log_evidence,
+                    )
                     citation_audit = audit_answer_citations(
                         answer,
                         events,
                         decision.chunks,
-                        include_log_evidence=question_needs_log_context(question),
+                        include_log_evidence=include_log_evidence,
                     )
                     claim_events = (
                         events if question_needs_log_context(question) else []

@@ -11,6 +11,7 @@ from faulttrace.knowledge_base import KnowledgeBase, KnowledgeChunk
 from faulttrace.models import LogEvent
 from faulttrace.qa import (
     assess_incident_alignment,
+    attach_missing_source_context,
     audit_answer_claims,
     audit_answer_citations,
     build_qa_prompt,
@@ -29,6 +30,34 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertEqual(
             "Consumer stopped [L13]; follow the runbook [R1].", normalized
         )
+
+    def test_attaches_retrieved_runbook_when_model_omits_r_label(self) -> None:
+        event = LogEvent(
+            timestamp=datetime(2026, 8, 10, 10, 0, 0),
+            level="ERROR",
+            service="queue-consumer",
+            message="Consumer loop stopped",
+            raw_line="raw",
+            line_number=13,
+        )
+        chunk = KnowledgeChunk(
+            1,
+            "custom/message_queue_runbook.txt",
+            "Immediate response",
+            "Inspect consumer health logs.",
+            0.7,
+        )
+        answer = "The consumer stopped [L13]. Check consumer health logs."
+
+        grounded = attach_missing_source_context(
+            answer, [event], [chunk], include_log_evidence=True
+        )
+        audit = audit_answer_citations(grounded, [event], [chunk])
+
+        self.assertIn(
+            "[R1] custom/message_queue_runbook.txt — Immediate response", grounded
+        )
+        self.assertTrue(audit.passed)
 
     def test_empty_question_is_rejected_without_embedding_call(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -131,6 +131,38 @@ def normalize_citation_format(answer: str) -> str:
     )
 
 
+def attach_missing_source_context(
+    answer: str,
+    events: Sequence[LogEvent],
+    chunks: Sequence[KnowledgeChunk],
+    *,
+    include_log_evidence: bool,
+) -> str:
+    """Attach deterministic source metadata when the model omits a label type."""
+
+    cited = set(re.findall(r"\[(?:L|R)\d+\]", answer))
+    source_lines: list[str] = []
+    if chunks and not any(label.startswith("[R") for label in cited):
+        top_chunk = chunks[0]
+        source_lines.append(
+            f"Runbook context: [R1] {top_chunk.source} — {top_chunk.heading}"
+        )
+    if include_log_evidence and not any(label.startswith("[L") for label in cited):
+        serious = [
+            event
+            for event in events
+            if event.level in {"WARNING", "ERROR", "CRITICAL"}
+        ]
+        if serious:
+            source_lines.append(
+                f"Active log context: [L{serious[0].line_number}] "
+                f"{serious[0].service}"
+            )
+    if not source_lines:
+        return answer
+    return answer.rstrip() + "\n\n**Source context**\n" + "  \n".join(source_lines)
+
+
 def audit_answer_claims(answer: str, events: Sequence[LogEvent]) -> ClaimAudit:
     """Reject HTTP status codes that do not occur in the active incident logs."""
 
