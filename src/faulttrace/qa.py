@@ -98,10 +98,15 @@ class CitationAudit:
 
     cited_labels: tuple[str, ...]
     invalid_labels: tuple[str, ...]
+    missing_required_types: tuple[str, ...] = ()
 
     @property
     def passed(self) -> bool:
-        return bool(self.cited_labels) and not self.invalid_labels
+        return (
+            bool(self.cited_labels)
+            and not self.invalid_labels
+            and not self.missing_required_types
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -167,7 +172,12 @@ def audit_answer_citations(
         }
     allowed.update(f"[R{index}]" for index in range(1, len(chunks) + 1))
     invalid = tuple(label for label in cited if label not in allowed)
-    return CitationAudit(cited, invalid)
+    missing: list[str] = []
+    if include_log_evidence and not any(label.startswith("[L") for label in cited):
+        missing.append("[L#]")
+    if chunks and not any(label.startswith("[R") for label in cited):
+        missing.append("[R#]")
+    return CitationAudit(cited, invalid, tuple(missing))
 
 
 def question_needs_log_context(question: str) -> bool:

@@ -785,11 +785,19 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                 "Citation audit passed: " + ", ".join(citation_audit.cited_labels)
             )
         elif citation_audit:
-            detail = (
-                ", ".join(citation_audit.invalid_labels)
-                if citation_audit.invalid_labels
-                else "no evidence labels were cited"
-            )
+            problems: list[str] = []
+            if citation_audit.invalid_labels:
+                problems.append(
+                    "invalid labels: " + ", ".join(citation_audit.invalid_labels)
+                )
+            if citation_audit.missing_required_types:
+                problems.append(
+                    "missing required citation type(s): "
+                    + ", ".join(citation_audit.missing_required_types)
+                )
+            if not citation_audit.cited_labels:
+                problems.append("no evidence labels were cited")
+            detail = "; ".join(problems)
             st.warning(f"Citation audit needs review: {detail}.")
         st.caption(
             f"Measured locally — retrieval: {result['retrieval_seconds']:.2f}s | "

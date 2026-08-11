@@ -153,6 +153,12 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertFalse(numeric.passed)
         self.assertEqual(("[1]",), numeric.invalid_labels)
 
+        missing_runbook = audit_answer_citations(
+            "Observed [L7].", [event], [chunk]
+        )
+        self.assertFalse(missing_runbook.passed)
+        self.assertEqual(("[R#]",), missing_runbook.missing_required_types)
+
     def test_incident_alignment_rejects_queue_question_for_auth_logs(self) -> None:
         auth_event = LogEvent(
             timestamp=datetime(2026, 8, 10, 10, 0, 0),
