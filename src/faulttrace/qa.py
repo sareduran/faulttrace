@@ -233,7 +233,8 @@ def build_qa_prompt(
         ) or "No WARNING, ERROR, or CRITICAL log evidence was supplied."
         scope_instruction = (
             "This question concerns the active incident. Use [L#] for incident facts "
-            "and [R#] for runbook guidance."
+            "and [R#] for runbook guidance. The answer is invalid unless it contains "
+            "at least one [L#] citation and at least one [R#] citation."
         )
     else:
         log_evidence = (
@@ -242,7 +243,8 @@ def build_qa_prompt(
         )
         scope_instruction = (
             "This is a general definition question. Answer from RUNBOOK EVIDENCE "
-            "and cite [R#]. Do not discuss the active incident or cite logs."
+            "and include at least one [R#] citation. Do not discuss the active "
+            "incident or cite logs."
         )
 
     runbook_evidence = "\n\n".join(

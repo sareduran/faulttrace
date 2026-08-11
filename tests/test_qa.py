@@ -98,6 +98,8 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertIn("api-gateway", prompt)
         self.assertIn("[R1] Source: database.md", prompt)
         self.assertIn("What should I check?", prompt)
+        self.assertIn("at least one [L#]", prompt)
+        self.assertIn("at least one [R#]", prompt)
         self.assertIn("at most 120 words", prompt)
         self.assertIn("Never end with an unfinished sentence", prompt)
 
@@ -129,7 +131,7 @@ class QuestionAnsweringTests(unittest.TestCase):
         self.assertFalse(question_needs_log_context("What is a software incident?"))
         self.assertTrue(question_needs_log_context("What is causing this incident?"))
         self.assertNotIn("[L7] 2026", prompt)
-        self.assertIn("cite [R#]", prompt)
+        self.assertIn("at least one [R#] citation", prompt)
         self.assertEqual(("[L7]",), audit.invalid_labels)
 
     def test_citation_audit_rejects_labels_not_present_in_evidence(self) -> None:
