@@ -20,7 +20,7 @@ This document maps the Foundry Local summer-school milestones to concrete implem
 | Retrieval evaluation | Complete | `src/faulttrace/evaluation.py` | 6/6 cases passing with the included custom runbook indexed |
 | Performance measurement | Complete | retrieval, generation, and end-to-end timers in `app.py` | values displayed after local generation |
 | README and limitations | Complete | `README.md` | installation, architecture, evaluation, privacy, limitations |
-| Five-minute presentation/demo | Complete | PowerPoint and demo script in `docs/` | visually rendered and bounds-checked deck |
+| Five-minute presentation/demo | Complete | versioned demo script in `docs/`; presentation prepared as a separate submission artifact | visually rendered and bounds-checked deck |
 | GitHub delivery | Ready locally | clean Git repository scope and `.gitignore` | remote publishing requires project-owner account access |
 
 ## Current verification snapshot

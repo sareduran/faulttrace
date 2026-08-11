@@ -2,6 +2,8 @@
 
 **A fully local, evidence-grounded incident analysis and postmortem assistant built with Microsoft Foundry Local.**
 
+Developed as part of the **Microsoft AI Innovators Internship / Summer School** program.
+
 FaultTrace parses software logs, reconstructs a failure chain, retrieves relevant operational runbooks, and generates source-grounded answers or postmortems without sending incident data to a cloud API. It is designed as a compact offline RAG project for environments where logs and internal procedures are sensitive.
 
 > Project status: functional MVP. The application, local RAG pipeline, evaluation suite, and automated tests are working. The current prototype targets Windows with Foundry Local WinML.
@@ -237,4 +239,3 @@ FaultTrace is a decision-support prototype, not an autonomous remediation system
 
 - [Requirement traceability](docs/REQUIREMENTS_TRACEABILITY.md)
 - [Five-minute demo script](docs/DEMO_SCRIPT.md)
-- [PowerPoint presentation](docs/FaultTrace_5_Minute_Presentation.pptx)
