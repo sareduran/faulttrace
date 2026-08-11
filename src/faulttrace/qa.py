@@ -19,6 +19,7 @@ Never state or infer an HTTP status code unless that exact code occurs in LOG EV
 A timeout does not prove an HTTP 500 response. Do not convert one into a status code.
 Factual incident claims must cite log labels such as [L4].
 Operational guidance must cite runbook labels such as [R1].
+Citation labels must use square brackets exactly. Write [L4], never (L4) or L4.
 If the evidence does not establish the answer, explicitly say what is missing.
 Write concise technical English in Markdown.
 """
@@ -112,6 +113,17 @@ class ClaimAudit:
     @property
     def passed(self) -> bool:
         return not self.unsupported_http_statuses
+
+
+def normalize_citation_format(answer: str) -> str:
+    """Normalize common local-model citation variants to [L#]/[R#]."""
+
+    return re.sub(
+        r"\(\s*([LR]\d+)\s*\)",
+        lambda match: f"[{match.group(1)}]",
+        answer,
+        flags=re.IGNORECASE,
+    )
 
 
 def audit_answer_claims(answer: str, events: Sequence[LogEvent]) -> ClaimAudit:

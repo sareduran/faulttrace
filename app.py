@@ -49,6 +49,7 @@ from faulttrace.qa import (  # noqa: E402
     build_qa_prompt,
     retrieve_question_evidence,
     question_needs_log_context,
+    normalize_citation_format,
 )
 
 
@@ -711,6 +712,7 @@ def render_incident_qa(events: list[LogEvent]) -> None:
                     with st.spinner("The local model is preparing a grounded answer..."):
                         with FoundryChatService(max_tokens=320) as chat:
                             answer = chat.complete(QA_SYSTEM_PROMPT, prompt)
+                    answer = normalize_citation_format(answer)
                     generation_seconds = time.perf_counter() - generation_started
                     citation_audit = audit_answer_citations(
                         answer,

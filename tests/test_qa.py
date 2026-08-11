@@ -15,11 +15,21 @@ from faulttrace.qa import (
     audit_answer_citations,
     build_qa_prompt,
     question_needs_log_context,
+    normalize_citation_format,
     retrieve_question_evidence,
 )
 
 
 class QuestionAnsweringTests(unittest.TestCase):
+    def test_normalizes_parenthesized_citation_labels(self) -> None:
+        answer = "Consumer stopped (L13); follow the runbook (R1)."
+
+        normalized = normalize_citation_format(answer)
+
+        self.assertEqual(
+            "Consumer stopped [L13]; follow the runbook [R1].", normalized
+        )
+
     def test_empty_question_is_rejected_without_embedding_call(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             knowledge_base = KnowledgeBase(Path(temp_dir) / "qa.db")
