@@ -6,7 +6,7 @@ Developed as part of the **Microsoft AI Innovators Internship / Summer School** 
 
 FaultTrace parses software logs, reconstructs a failure chain, retrieves relevant operational runbooks, and generates source-grounded answers or postmortems without sending incident data to a cloud API. It is designed as a compact offline RAG project for environments where logs and internal procedures are sensitive.
 
-> Project status: functional MVP. The application, local RAG pipeline, evaluation suite, and automated tests are working. The current prototype targets Windows with Foundry Local WinML.
+> Project status: functional MVP. The application, local RAG pipeline, evaluation suite, and automated tests are working. The code and default dependency set are cross-platform; the current release has been verified on Windows.
 
 ## Why FaultTrace?
 
@@ -78,17 +78,19 @@ The `0.48` threshold was calibrated on the bundled knowledge base: supported eva
 
 ## Requirements
 
-- Windows 10 or Windows 11, 64-bit
-- Python 3.13 (the project was developed with Python 3.13.14)
+- Windows, macOS (Apple silicon), or Linux supported by Microsoft Foundry Local
+- Python 3.11 or later (the project was developed with Python 3.13.14)
 - 16 GB RAM recommended
 - Microsoft Foundry Local-compatible hardware/runtime
 - Internet access for initial Python dependency and model download only
 
-The pinned dependency is `foundry-local-sdk-winml`; therefore this prototype does not claim macOS or Linux support.
+The default `requirements.txt` uses Microsoft's cross-platform `foundry-local-sdk` package. Windows users may instead use `requirements-winml.txt` for the Windows ML accelerated backend. Install only one SDK variant in an environment.
 
 ## Installation
 
-Open PowerShell in the project directory:
+Create a virtual environment from the project directory.
+
+Windows PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -97,19 +99,34 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Build the bundled runbook index. The first run downloads the embedding model if it is not already cached:
+macOS or Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+On Windows, the optional hardware-accelerated SDK can be selected in a fresh environment with:
 
 ```powershell
-python scripts\build_knowledge_base.py
+python -m pip install -r requirements-winml.txt
+```
+
+Build the bundled runbook index. The first run downloads the embedding model if it is not already cached:
+
+```bash
+python scripts/build_knowledge_base.py
 ```
 
 Start the application:
 
-```powershell
-python -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501
+```bash
+python run_faulttrace.py
 ```
 
-Then open [http://127.0.0.1:8501](http://127.0.0.1:8501). On Windows, `START_FAULTTRACE.bat` performs the last step and opens the browser automatically.
+Then open [http://127.0.0.1:8501](http://127.0.0.1:8501). `run_faulttrace.py` uses the active Python interpreter on Windows, macOS, and Linux. The optional `START_FAULTTRACE.bat` remains available as a Windows convenience shortcut.
 
 ## Usage
 

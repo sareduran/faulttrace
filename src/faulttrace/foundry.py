@@ -8,7 +8,7 @@ from foundry_local_sdk import Configuration, FoundryLocalManager
 
 
 APP_NAME = "FaultTrace"
-MODEL_CACHE_DIR = Path.home() / ".RootLens" / "cache" / "models"
+MODEL_CACHE_DIR = Path.home() / ".FaultTrace" / "cache" / "models"
 EMBEDDING_MODEL = "qwen3-embedding-0.6b"
 CHAT_MODEL = "qwen3.5-2b-text"
 

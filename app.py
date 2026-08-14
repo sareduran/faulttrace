@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import html
 import sys
 import time
@@ -15,6 +16,7 @@ import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 SRC_ROOT = PROJECT_ROOT / "src"
+MASCOT_ROOT = PROJECT_ROOT / "assets" / "branding" / "mascot"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
@@ -69,6 +71,14 @@ DEMO_SCENARIOS = {
     "Authentication outage": "sample_auth_incident.log",
     "High CPU and timeouts": "sample_cpu_incident.log",
 }
+
+
+def mascot_data_uri(name: str) -> str:
+    """Return a compact project mascot as an embeddable local PNG URI."""
+
+    image_path = MASCOT_ROOT / f"faulttrace-mascot-{name}-ui.png"
+    encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
 
 
 def inject_faulttrace_theme() -> None:
@@ -172,6 +182,56 @@ def inject_faulttrace_theme() -> None:
             background: var(--ft-success);
             box-shadow: 0 0 12px rgba(66,211,146,.8);
         }
+        .faulttrace-hero-side {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+        .faulttrace-hero-mascot {
+            width: 92px;
+            height: 92px;
+            object-fit: contain;
+            opacity: .96;
+        }
+        .faulttrace-qa-intro {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            min-height: 168px;
+            padding: 1rem 1.2rem 1rem 1.35rem;
+            margin: .2rem 0 1rem;
+            overflow: hidden;
+            border: 1px solid var(--ft-border);
+            border-radius: 16px;
+            background:
+                radial-gradient(circle at 90% 15%, rgba(255,107,53,.10), transparent 13rem),
+                linear-gradient(140deg, rgba(18,28,43,.92), rgba(10,16,26,.88));
+        }
+        .faulttrace-qa-copy { max-width: 820px; }
+        .faulttrace-qa-copy h2 {
+            color: #f8fbff;
+            margin: 0 0 .45rem;
+            font-size: 1.65rem;
+        }
+        .faulttrace-qa-copy p {
+            color: #cbd7e6;
+            margin: 0;
+            line-height: 1.55;
+        }
+        .faulttrace-qa-copy small {
+            display: block;
+            color: var(--ft-muted);
+            margin-top: .65rem;
+            line-height: 1.45;
+        }
+        .faulttrace-qa-mascot {
+            flex: 0 0 auto;
+            width: 155px;
+            height: 155px;
+            object-fit: contain;
+        }
         .incident-strip {
             display: flex;
             align-items: center;
@@ -254,7 +314,12 @@ def inject_faulttrace_theme() -> None:
 
         @media (max-width: 760px) {
             .faulttrace-hero { align-items: flex-start; flex-direction: column; }
-            .faulttrace-status { align-self: flex-start; }
+            .faulttrace-hero-side { width: 100%; justify-content: space-between; }
+            .faulttrace-hero-mascot { width: 76px; height: 76px; }
+            .faulttrace-status { align-self: center; }
+            .faulttrace-qa-intro { min-height: 138px; padding: .9rem 1rem; }
+            .faulttrace-qa-copy h2 { font-size: 1.4rem; }
+            .faulttrace-qa-mascot { width: 105px; height: 105px; }
             .block-container { padding-top: 1rem; }
         }
         </style>
@@ -613,7 +678,11 @@ def render_ai_analysis(events: list[LogEvent], source_name: str) -> None:
     report_id = st.session_state.get("saved_report_id")
     if report_id:
         mode = st.session_state.get("analysis_mode", "Analysis")
-        st.success(f"{mode} report saved locally as incident report #{report_id}.")
+        mascot_column, notice_column = st.columns((0.65, 5.35))
+        with mascot_column:
+            st.image(MASCOT_ROOT / "faulttrace-mascot-success-ui.png", width=88)
+        with notice_column:
+            st.success(f"{mode} report saved locally as incident report #{report_id}.")
     st.markdown(analysis)
     performance = st.session_state.get("analysis_performance")
     if performance and st.session_state.get("analysis_mode") == "Deep AI":
@@ -647,14 +716,25 @@ def render_ai_analysis(events: list[LogEvent], source_name: str) -> None:
 def render_incident_qa(events: list[LogEvent]) -> None:
     """Answer free-form incident questions using only accepted local evidence."""
 
-    st.subheader("Ask FaultTrace")
-    st.write(
-        "Ask about the active incident, its likely cause, or safe recovery steps. "
-        "FaultTrace answers only when the local knowledge base contains relevant evidence."
-    )
-    st.caption(
-        "Retrieval runs first. The local chat model starts only if the evidence passes "
-        "the relevance check; a generated answer may take about one minute on this PC."
+    st.markdown(
+        f"""
+        <section class="faulttrace-qa-intro">
+          <div class="faulttrace-qa-copy">
+            <h2>Ask FaultTrace</h2>
+            <p>
+              Ask about the active incident, its likely cause, or safe recovery steps.
+              FaultTrace answers only when the local knowledge base contains relevant evidence.
+            </p>
+            <small>
+              Retrieval runs first. The local chat model starts only if the evidence passes
+              the relevance check; a generated answer may take about one minute on this PC.
+            </small>
+          </div>
+          <img class="faulttrace-qa-mascot" src="{mascot_data_uri('thinking')}"
+               alt="FaultTrace mascot examining local log evidence" />
+        </section>
+        """,
+        unsafe_allow_html=True,
     )
 
     question = st.text_input(
@@ -757,36 +837,58 @@ def render_incident_qa(events: list[LogEvent]) -> None:
 
     status = result["status"]
     if status == "rejected":
-        st.warning(result["answer"])
-        st.caption(
-            f"Best similarity: {result['score']:.3f} | Required: "
-            f"{result['threshold']:.3f}"
-        )
-        if "retrieval_seconds" in result:
+        mascot_column, message_column = st.columns((0.65, 5.35))
+        with mascot_column:
+            st.image(MASCOT_ROOT / "faulttrace-mascot-alert-ui.png", width=82)
+        with message_column:
+            st.warning(result["answer"])
             st.caption(
-                f"Measured locally — retrieval: {result['retrieval_seconds']:.2f}s | "
-                "LLM generation: not started"
+                f"Best similarity: {result['score']:.3f} | Required: "
+                f"{result['threshold']:.3f}"
             )
+            if "retrieval_seconds" in result:
+                st.caption(
+                    f"Measured locally — retrieval: {result['retrieval_seconds']:.2f}s | "
+                    "LLM generation: not started"
+                )
     elif status == "mismatch":
-        st.warning(result["answer"])
-        st.caption("The local chat model was not started because incident alignment failed.")
+        mascot_column, message_column = st.columns((0.65, 5.35))
+        with mascot_column:
+            st.image(MASCOT_ROOT / "faulttrace-mascot-alert-ui.png", width=82)
+        with message_column:
+            st.warning(result["answer"])
+            st.caption(
+                "The local chat model was not started because incident alignment failed."
+            )
     elif status in {"empty", "error"}:
-        st.error(result["answer"])
+        mascot_column, message_column = st.columns((0.65, 5.35))
+        with mascot_column:
+            st.image(MASCOT_ROOT / "faulttrace-mascot-idle-ui.png", width=88)
+        with message_column:
+            st.error(result["answer"])
     else:
         st.markdown(result["answer"])
         claim_audit = result.get("claim_audit")
         if claim_audit and not claim_audit.passed:
-            st.error(
-                "Grounding audit failed: the draft used HTTP status code(s) not "
-                "present in the incident logs: "
-                + ", ".join(claim_audit.unsupported_http_statuses)
-                + ". Do not use this draft."
-            )
+            mascot_column, message_column = st.columns((0.65, 5.35))
+            with mascot_column:
+                st.image(MASCOT_ROOT / "faulttrace-mascot-alert-ui.png", width=82)
+            with message_column:
+                st.error(
+                    "Grounding audit failed: the draft used HTTP status code(s) not "
+                    "present in the incident logs: "
+                    + ", ".join(claim_audit.unsupported_http_statuses)
+                    + ". Do not use this draft."
+                )
         else:
-            st.success(
-                f"Evidence check passed ({result['score']:.3f} >= "
-                f"{result['threshold']:.3f}). Answer generated entirely on-device."
-            )
+            mascot_column, message_column = st.columns((0.65, 5.35))
+            with mascot_column:
+                st.image(MASCOT_ROOT / "faulttrace-mascot-success-ui.png", width=82)
+            with message_column:
+                st.success(
+                    f"Evidence check passed ({result['score']:.3f} >= "
+                    f"{result['threshold']:.3f}). Answer generated entirely on-device."
+                )
         citation_audit = result.get("citation_audit")
         if citation_audit and citation_audit.passed:
             st.caption(
@@ -912,7 +1014,7 @@ def main() -> None:
     )
     inject_faulttrace_theme()
     st.markdown(
-        """
+        f"""
         <section class="faulttrace-hero">
           <div>
             <div class="faulttrace-eyebrow">Local incident intelligence</div>
@@ -922,7 +1024,11 @@ def main() -> None:
               and generate source-grounded postmortems without sending data off-device.
             </p>
           </div>
-          <div class="faulttrace-status">LOCAL / OFFLINE</div>
+          <div class="faulttrace-hero-side">
+            <img class="faulttrace-hero-mascot" src="{mascot_data_uri('secure')}"
+                 alt="FaultTrace secure local processing mascot" />
+            <div class="faulttrace-status">LOCAL / OFFLINE</div>
+          </div>
         </section>
         """,
         unsafe_allow_html=True,
@@ -952,6 +1058,9 @@ def main() -> None:
             st.code("\n".join(rejected), language="text")
 
     if not events:
+        empty_left, empty_mascot, empty_right = st.columns((1, 0.35, 1))
+        with empty_mascot:
+            st.image(MASCOT_ROOT / "faulttrace-mascot-idle-ui.png", width=145)
         st.error("No supported log events were found in this file.")
         st.stop()
 

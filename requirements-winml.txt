@@ -1,0 +1,2 @@
+-r requirements-base.txt
+foundry-local-sdk-winml==1.2.3

@@ -6,6 +6,7 @@ This document maps the Foundry Local summer-school milestones to concrete implem
 |---|---|---|---|
 | Original local RAG application | Complete | `app.py`, `src/faulttrace/analysis.py`, `src/faulttrace/qa.py` | Streamlit smoke test and live demo |
 | User interface | Complete | Six-tab Streamlit interface in `app.py` | `tests/test_dashboard.py`, Streamlit AppTest |
+| Cross-platform application | Complete; Windows verified | OS-neutral Python/Streamlit code, cross-platform `foundry-local-sdk`, and `run_faulttrace.py`; optional WinML dependency isolated in `requirements-winml.txt` | automated suite on Windows; macOS/Linux installation instructions documented |
 | TXT/MD/PDF ingestion | Complete | `src/faulttrace/document_ingestion.py` | `tests/test_document_ingestion.py` |
 | Heading-aware chunking | Complete | `chunk_content()` and `prepare_document_chunks()` in `src/faulttrace/knowledge_base.py` | `tests/test_knowledge_base.py` |
 | Foundry Local embeddings | Complete | `FoundryEmbeddingService` using `qwen3-embedding-0.6b` | Six-case live retrieval evaluation |
